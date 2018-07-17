@@ -1,11 +1,12 @@
 const operators = require('rxjs/operators');
 const Instagram = require('..');
-const util = require('util');
+const debug = require('debug');
+const log = debug('IG-test:index');
 
 
 test('Should get hashtag post locations', (done) => {
 	const ig = new Instagram();
-	const wiretap = jest.fn(res => console.log(util.inspect(res, { colors: true })));
+	const wiretap = jest.fn(log);
 
 	ig.hashtag('londoneats').posts()
 		.pipe(
@@ -13,7 +14,7 @@ test('Should get hashtag post locations', (done) => {
 			operators.filter(fullPost => fullPost.location),
 			operators.distinct(fullPost => fullPost.location.id),
 			operators.concatMap(fullPost => ig.location(fullPost.location.id).details()),
-			operators.take(20),
+			operators.take(10),
 			operators.reduce((acc, val) => (acc.push(val), acc), []),
 		)
 		.subscribe({
@@ -26,10 +27,9 @@ test('Should get hashtag post locations', (done) => {
 		});
 }, 1000 * 1000);
 
-
 test('Should get user post locations', (done) => {
 	const ig = new Instagram();
-	const wiretap = jest.fn(res => console.log(util.inspect(res, { colors: true })));
+	const wiretap = jest.fn(log);
 
 	ig.user('foodandsachi').posts()
 		.pipe(
@@ -37,7 +37,7 @@ test('Should get user post locations', (done) => {
 			operators.filter(fullPost => fullPost.location),
 			operators.distinct(fullPost => fullPost.location.id),
 			operators.concatMap(fullPost => ig.location(fullPost.location.id).details()),
-			operators.take(20),
+			operators.take(10),
 			operators.reduce((acc, val) => (acc.push(val), acc), []),
 		)
 		.subscribe({

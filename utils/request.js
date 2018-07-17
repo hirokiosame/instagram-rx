@@ -1,7 +1,9 @@
 const request = require('request-promise-native');
 const { CookieJar } = require('tough-cookie');
 const md5 = require('./md5');
-const queue = require('async/queue');
+const cache = require('lru-cache')({
+	max_age : 1000 * 60 * 10,
+});
 
 const jar = request.jar();
 const req = request.defaults({
@@ -14,18 +16,19 @@ const req = request.defaults({
 	jar,
 });
 
-const q = queue(function({ args }, callback) {
-	req(...args).then(function(result) {
-		callback(null, result);
-	});
-}, 2);
+module.exports = function (...args) {
+	const key = JSON.stringify(args);
+	if (cache.has(key)) {
+		return Promise.resolve(cache.get(key));
+	}
 
-module.exports = req;
+	return req(...args).then(res => (cache.set(key, res), res));
+};
 
 module.exports.graphql = function({ rhx_gis, query_hash, variables }) {
 	variables = JSON.stringify(variables);
 
-	return req('/graphql/query/', {
+	return this('/graphql/query/', {
 		headers: {
 			'x-instagram-gis': md5(`${rhx_gis}:${variables}`),
 		},
@@ -35,19 +38,6 @@ module.exports.graphql = function({ rhx_gis, query_hash, variables }) {
 		},
 	});
 };
-
-// = function(...args) {
-// 	return new Promise((resolve, reject) => {
-// 		q.push({args}, function(err, result) {
-// 			if (err) {
-// 				return reject(err);
-// 			}
-
-// 			resolve(result);
-// 		});
-// 	});
-// }
-
 
 module.exports.deleteCookies = function() {
 	jar._jar = new CookieJar(undefined, { looseMode: true });

@@ -1,6 +1,5 @@
 const retry = require('./retry');
 
-
 test('shouldnt retry', async () => {
 	const fn = jest.fn();
 

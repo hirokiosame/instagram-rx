@@ -1,6 +1,8 @@
 const operators = require('rxjs/operators');
 const Instagram = require('..');
-const util = require('util');
+const debug = require('debug');
+const log = debug('IG-test:User');
+
 
 test('Should get location details', async () => {
 	const ig = new Instagram();
@@ -12,7 +14,7 @@ test('Should get location details', async () => {
 
 test('Should get location top posts', (done) => {
 	const ig = new Instagram();
-	const wiretap = jest.fn(/*console.log*/);
+	const wiretap = jest.fn(log);
 
 	ig.location('846436491').topPosts()
 		.subscribe({
@@ -21,12 +23,13 @@ test('Should get location top posts', (done) => {
 				expect(wiretap).toHaveBeenCalled();
 				done();
 			},
+			error: console.err,
 		});
 }, 1000 * 10);
 
 test('Should get location posts', (done) => {
 	const ig = new Instagram();
-	const wiretap = jest.fn(console.log);
+	const wiretap = jest.fn(log);
 
 	ig.location('846436491').posts()
 		.subscribe({
@@ -35,8 +38,6 @@ test('Should get location posts', (done) => {
 				expect(wiretap).toHaveBeenCalled();
 				done();
 			},
-			error(err) {
-				console.error(err);
-			},
+			error: console.err,
 		});
 }, 1000 * 1000);

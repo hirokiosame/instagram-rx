@@ -1,6 +1,7 @@
 const operators = require('rxjs/operators');
 const Instagram = require('..');
-const util = require('util');
+const debug = require('debug');
+const log = debug('IG-test:Media');
 
 
 test('Should get media details', async () => {

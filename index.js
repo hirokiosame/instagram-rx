@@ -15,7 +15,7 @@ process.on('unhandledRejection', (reason, promise) => {
 	console.log(reason, promise);
 });
 
-class Instagram {
+class InstagramRx {
 
 	constructor(options) {
 	}
@@ -41,4 +41,4 @@ class Instagram {
 	}
 }
 
-module.exports = Instagram;
+module.exports = InstagramRx;

@@ -1,6 +1,7 @@
 const operators = require('rxjs/operators');
 const Instagram = require('..');
-const util = require('util');
+const debug = require('debug');
+const log = debug('IG-test:User');
 
 
 test('Should get user details', async () => {
@@ -13,7 +14,7 @@ test('Should get user details', async () => {
 
 test('Should get user posts', (done) => {
 	const ig = new Instagram();
-	const wiretap = jest.fn(p => console.log(util.inspect(p, { colors: true })));
+	const wiretap = jest.fn(log);
 
 	ig.user('private.number_').posts()
 		.pipe(
@@ -25,16 +26,14 @@ test('Should get user posts', (done) => {
 				expect(wiretap).toHaveBeenCalled();
 				done();
 			},
-			error(err) {
-				console.error(err);
-			},
+			error: console.err,
 		});
 }, 1000 * 1000);
 
 
 test('Should not get private user posts', (done) => {
 	const ig = new Instagram();
-	const wiretap = jest.fn(console.log);
+	const wiretap = jest.fn(log);
 
 	ig.user('bevwins').posts()
 		.subscribe({
@@ -43,8 +42,6 @@ test('Should not get private user posts', (done) => {
 				expect(wiretap).not.toHaveBeenCalled();
 				done();
 			},
-			error(err) {
-				console.error(err);
-			},
+			error: console.err,
 		});
 }, 1000 * 1000);
