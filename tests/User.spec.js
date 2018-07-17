@@ -1,5 +1,5 @@
 const operators = require('rxjs/operators');
-const Instagram = require('./index');
+const Instagram = require('..');
 const util = require('util');
 
 

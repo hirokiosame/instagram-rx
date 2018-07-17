@@ -1,5 +1,5 @@
 const operators = require('rxjs/operators');
-const Instagram = require('./index');
+const Instagram = require('..');
 const util = require('util');
 
 // test('Should get hashtag details', async () => {
@@ -27,9 +27,12 @@ const util = require('util');
 
 test('Should get hashtag posts', (done) => {
 	const ig = new Instagram();
-	const wiretap = jest.fn(console.log);
+	const wiretap = jest.fn(post => console.log(util.inspect(post, { colors: true })));
 
 	ig.hashtag('londoneats').posts()
+		.pipe(
+			operators.take(10),
+		)
 		.subscribe({
 			next: wiretap,
 			complete() {
