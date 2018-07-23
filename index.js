@@ -6,6 +6,7 @@ const Media = require('./lib/Media');
 const Location = require('./lib/Location');
 const Hashtag = require('./lib/Hashtag');
 const createRequest = require('./utils/createRequest');
+const createDB = require('./utils/database');
 
 process.on('unhandledRejection', (reason, promise) => {
 	console.log(reason, promise);
@@ -13,19 +14,25 @@ process.on('unhandledRejection', (reason, promise) => {
 
 class InstagramRx {
 
-	constructor({ cacheMaxAge = 1000 * 60 } = {}) {
+	constructor({
+		cacheMaxAge = 1000 * 60,
+		jar,
+	} = {}) {
 		this.request = createRequest({
 			cacheMaxAge,
+			jar,
 		});
 
+		this.db = createDB();
 	}
 
-
 	login(username, password) {
-		return retry(() => this.request('/'))
+		console.assert(username, 'Username must be provided');
+		console.assert(password, 'Password must be provided');
+
+		return this.request.sharedData('/')
 			.pipe(
-				operators.map(src => extractSharedData(src)),
-				operators.map(sharedData => sharedData.config.csrf_token),
+				operators.map(({ config }) => config.csrf_token),
 				operators.concatMap(csrf_token => this.request('/accounts/login/ajax/', {
 					// resolveWithFullResponse: true,
 					method: 'POST',
@@ -34,7 +41,13 @@ class InstagramRx {
 					},
 					form: { username, password },
 				})),
+				operators.tap(() => this.request.chrome()),
 			);
+	}
+
+
+	logout() {
+		return this.request('/accounts/logout/ajax/');
 	}
 
 	search(query) {
@@ -54,7 +67,7 @@ class InstagramRx {
 	}
 
 	user(username) {
-		return new User(this.request, { username });
+		return new User(this, { username });
 	}
 }
 
